@@ -7,13 +7,12 @@
 //
 
 import UIKit
+import CoreData
 
 class myTableViewController: UITableViewController {
 
     var datax = [Tasks]()
-    var tempArr = [String]()
-
-    
+    var tempArr = [NSManagedObject]()
     override func viewDidLoad() {
         super.viewDidLoad()
         fetchData()
@@ -29,9 +28,10 @@ class myTableViewController: UITableViewController {
     func fetchData(){
         do {
             datax=try context.fetch(Tasks.fetchRequest())
-            for each in datax{
+            for each in datax as [NSManagedObject]{
                 //                print("Data is ",each.mydata ?? "nil")
-                tempArr.append(each.mydata!)
+                //                tempArr.append(each.mydata!)
+                self.tempArr.append(each)
                 print("TempArr is ",tempArr)
             }
         } catch  {
@@ -59,28 +59,37 @@ class myTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ReuseIdentifier", for: indexPath)
-        cell.textLabel?.text=tempArr[indexPath.row]
+        cell.textLabel?.text=tempArr[indexPath.row].value(forKey: "mydata") as? String
         // Configure the cell...
 
         return cell
     }
  
-
-    /*
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
         return true
     }
-    */
+ 
 
     
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
             
+             context.delete(tempArr[indexPath.row])
+            do {
+                try context.save()
+                self.tempArr.removeAll(keepingCapacity: true)
+                self.fetchData()
+                self.tableView.reloadData()
+            } catch  {
+                
+            }
+            
+
+//
         } else if editingStyle == .insert {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }    
