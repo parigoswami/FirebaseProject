@@ -10,33 +10,64 @@ import UIKit
 import CoreData
 
 class myTableViewController: UITableViewController {
-
+    
+    var tempStr : String = ""
     var datax = [Tasks]()
     var tempArr = [NSManagedObject]()
     override func viewDidLoad() {
         super.viewDidLoad()
-        fetchData()
+       
+        navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Add", style: UIBarButtonItemStyle.plain, target: self, action:#selector(myTableViewController.addFunc))
+        print("Hello")
     }
-    
-        //My functions
-    func SaveData(){
-        let taskX = Tasks(context: context)
-        taskX.mydata = "papa1"
-        appDelegate.saveContext()
-        print("Done insert")
+
+    func addFunc(){
+        let alert = UIAlertController(title: "AlertController", message: "Whatever Your Message is here", preferredStyle: .alert)
+        let submitAction = UIAlertAction(title: "Submit", style: .default, handler: {
+            (action) -> Void in
+            let textfield = alert.textFields![0]
+            print("Text Text is ",textfield.text!)
+            self.tempStr=textfield.text!
+            print(self.tempStr)
+            let taskX = Tasks(context: context)
+            taskX.mydata = self.tempStr
+            appDelegate.saveContext()
+            self.fetchData()
+            self.tableView.reloadData()
+            
+        })
+        
+        let cancel = UIAlertAction(title: "Cancel", style: .destructive, handler: {
+            (action) -> Void in
+        })
+        
+        
+        alert.addTextField { (textField: UITextField) in
+            textField.keyboardAppearance = .dark
+            textField.keyboardType = .default
+            textField.autocorrectionType = .default
+            textField.placeholder = "Type something here"
+            textField.clearButtonMode = .whileEditing
+            
+        }
+        
+        alert.addAction(submitAction)
+        alert.addAction(cancel)
+        self.present(alert, animated: true, completion: nil)
+        
     }
+
     func fetchData(){
         do {
             datax=try context.fetch(Tasks.fetchRequest())
             for each in datax as [NSManagedObject]{
-                //                print("Data is ",each.mydata ?? "nil")
-                //                tempArr.append(each.mydata!)
+                                print("Data is ",each.value(forKey: "mydata")!)
                 self.tempArr.append(each)
-                print("TempArr is ",tempArr)
             }
-        } catch  {
+        } catch
+        {
         }
-        print("DONE FETCH>>>>>>>")
+//        print("DONE FETCH>>>>>>>")
     }
 
 
